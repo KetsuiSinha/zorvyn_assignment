@@ -1,0 +1,55 @@
+// Finance dashboard — SQLite for local development
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  VIEWER
+  ANALYST
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum EntryType {
+  INCOME
+  EXPENSE
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  name         String
+  role         Role
+  status       UserStatus   @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  records      FinancialRecord[]
+}
+
+model FinancialRecord {
+  id          String    @id @default(cuid())
+  amount      Decimal
+  type        EntryType
+  category    String
+  date        DateTime
+  notes       String?
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([date])
+  @@index([category])
+  @@index([type])
+}
